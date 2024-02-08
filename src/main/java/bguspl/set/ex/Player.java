@@ -1,5 +1,9 @@
 package bguspl.set.ex;
 
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import bguspl.set.Env;
 
 /**
@@ -50,6 +54,8 @@ public class Player implements Runnable {
      */
     private int score;
 
+    //new
+    private ArrayBlockingQueue<Integer> actionsQueue = new ArrayBlockingQueue<>(3);
     /**
      * The class constructor.
      *
@@ -64,6 +70,7 @@ public class Player implements Runnable {
         this.table = table;
         this.id = id;
         this.human = human;
+        actionsQueue = new ArrayBlockingQueue<>(3);
     }
 
     /**
@@ -77,7 +84,23 @@ public class Player implements Runnable {
 
         while (!terminate) {
             // TODO implement main player loop
-        }
+            Integer slotAction;
+            try {
+                slotAction = actionsQueue.take();
+                }catch (InterruptedException ignored) {}
+            }
+            if (table.containPlayerToken(score, id)){
+                table.removeToken(id, slotAction);
+            }
+            else{
+                synchronized (table) {
+                table.placeToken(id,slotAction);}
+            }
+                        
+             
+
+
+
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
@@ -92,6 +115,7 @@ public class Player implements Runnable {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
                 // TODO implement player key press simulator
+                ArrayBlockingQueue<Integer> actionsQueue = new ArrayBlockingQueue<>(3);
                 try {
                     synchronized (this) { wait(); }
                 } catch (InterruptedException ignored) {}
@@ -106,6 +130,7 @@ public class Player implements Runnable {
      */
     public void terminate() {
         // TODO implement
+        terminate = true;
     }
 
     /**
@@ -115,6 +140,9 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
+        try {
+            actionsQueue.put(slot);
+        } catch (InterruptedException ignored) {}
     }
 
     /**
@@ -125,7 +153,11 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
-
+        try{    
+            Thread.sleep(env.config.pointFreezeMillis);
+        } catch (InterruptedException ignored) {}
+        this.score++;
+        
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
     }
@@ -135,6 +167,9 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
+        try{    
+            Thread.sleep(env.config.penaltyFreezeMillis);
+        } catch (InterruptedException ignored) {}
     }
 
     public int score() {

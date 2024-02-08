@@ -29,6 +29,9 @@ public class Table {
      */
     protected final Integer[] cardToSlot; // slot per card (if any)
 
+    //new
+    public Boolean[][] playerTokens; //keep track of player tokens on the table
+
     /**
      * Constructor for testing.
      *
@@ -41,6 +44,7 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
+        this.playerTokens = new Boolean[env.config.tableSize][env.config.players];
     }
 
     /**
@@ -51,6 +55,7 @@ public class Table {
     public Table(Env env) {
 
         this(env, new Integer[env.config.tableSize], new Integer[env.config.deckSize]);
+        this.playerTokens = new Boolean[env.config.tableSize][env.config.players];
     }
 
     /**
@@ -127,5 +132,8 @@ public class Table {
     public boolean removeToken(int player, int slot) {
         // TODO implement
         return false;
+    }
+    public boolean containPlayerToken(int player, int slot) {
+        return playerTokens[slot][player];
     }
 }
