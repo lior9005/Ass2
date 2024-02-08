@@ -106,6 +106,9 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
 
+        cardToSlot[slotToCard[slot]] = null;
+        slotToCard[slot] = null;
+
         // TODO implement
     }
 
@@ -127,5 +130,16 @@ public class Table {
     public boolean removeToken(int player, int slot) {
         // TODO implement
         return false;
+    }
+
+    public int cardAtSlot(int slot) {
+        // new function
+        if(slotToCard[slot]==null)
+            return -1;
+        return  slotToCard[slot];
+    }
+
+    public Integer[] getSlotToCard(){
+        return slotToCard;
     }
 }
