@@ -30,7 +30,7 @@ public class Table {
     protected final Integer[] cardToSlot; // slot per card (if any)
 
     //new
-    public Boolean[][] playerTokens; //keep track of player tokens on the table
+    public volatile Boolean[][] playerTokens; //keep track of player tokens on the table
 
     /**
      * Constructor for testing.
@@ -40,11 +40,13 @@ public class Table {
      * @param cardToSlot - mapping between a card and the slot it is in (null if none).
      */
     public Table(Env env, Integer[] slotToCard, Integer[] cardToSlot) {
-
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
         this.playerTokens = new Boolean[env.config.tableSize][env.config.players];
+        for (int i = 0; i < env.config.tableSize; i++) {
+            Arrays.fill(playerTokens[i], false);
+        }
     }
 
     /**
@@ -53,9 +55,11 @@ public class Table {
      * @param env - the game environment objects.
      */
     public Table(Env env) {
-
         this(env, new Integer[env.config.tableSize], new Integer[env.config.deckSize]);
         this.playerTokens = new Boolean[env.config.tableSize][env.config.players];
+        for (int i = 0; i < env.config.tableSize; i++) {
+            Arrays.fill(playerTokens[i], false);
+        }
     }
 
     /**
@@ -126,6 +130,8 @@ public class Table {
      */
     public void placeToken(int player, int slot) {
         // TODO implement
+        playerTokens[slot][player] = true;
+        env.ui.placeToken(player, slot);
     }
 
     /**
@@ -136,9 +142,14 @@ public class Table {
      */
     public boolean removeToken(int player, int slot) {
         // TODO implement
-
-        return false;
+        if (!playerTokens[slot][player]) return false;
+        else{
+            playerTokens[slot][player] = false;
+            env.ui.removeToken(player, slot);
+            return true;
+        }
     }
+
     public boolean containPlayerToken(int player, int slot) {
         return playerTokens[slot][player];
     }

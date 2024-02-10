@@ -1,0 +1,76 @@
+[22:53:03.032] [INFO   ] thread main starting.
+[22:53:03.042] [SEVERE ] cannot read configuration file config.properties trying from resources.
+[22:53:03.044] [SEVERE ] configuration file was loaded from resources directory.
+[22:53:03.505] [INFO   ] thread dealer starting.
+[22:53:03.506] [INFO   ] thread dealer starting.
+[22:53:03.506] [INFO   ] thread player 1 starting.
+[22:53:03.506] [INFO   ] thread player 2 starting.
+[22:53:03.507] [INFO   ] thread computer-1 starting.
+[22:53:03.508] [SEVERE ] player 2 placing token on slot 6
+[22:53:03.509] [SEVERE ] player 2 placing token on slot 3
+[22:53:03.509] [SEVERE ] player 2 placing token on slot 10
+[22:53:03.624] [SEVERE ] placing card 16 in slot 0
+[22:53:03.733] [SEVERE ] placing card 78 in slot 1
+[22:53:03.843] [SEVERE ] placing card 10 in slot 2
+[22:53:03.954] [SEVERE ] placing card 60 in slot 3
+[22:53:04.061] [SEVERE ] placing card 63 in slot 4
+[22:53:04.170] [SEVERE ] placing card 56 in slot 5
+[22:53:04.280] [SEVERE ] placing card 15 in slot 6
+[22:53:04.388] [SEVERE ] placing card 70 in slot 7
+[22:53:04.498] [SEVERE ] placing card 36 in slot 8
+[22:53:04.606] [SEVERE ] placing card 79 in slot 9
+[22:53:04.716] [SEVERE ] placing card 22 in slot 10
+[22:53:04.825] [SEVERE ] placing card 43 in slot 11
+[22:53:04.827] [SEVERE ] updating countdown to 60000
+[22:53:05.838] [SEVERE ] updating countdown to 58989
+[22:53:06.848] [SEVERE ] updating countdown to 57979
+[22:53:07.853] [SEVERE ] updating countdown to 56974
+[22:53:08.861] [SEVERE ] updating countdown to 55966
+[22:53:09.864] [SEVERE ] updating countdown to 54963
+[22:53:10.875] [SEVERE ] updating countdown to 53952
+[22:53:11.888] [SEVERE ] updating countdown to 52939
+[22:53:12.899] [SEVERE ] updating countdown to 51928
+[22:53:13.916] [SEVERE ] updating countdown to 50911
+[22:53:14.925] [SEVERE ] updating countdown to 49902
+[22:53:15.931] [SEVERE ] updating countdown to 48896
+[22:53:16.944] [SEVERE ] updating countdown to 47883
+[22:53:17.961] [SEVERE ] updating countdown to 46866
+[22:53:18.974] [SEVERE ] updating countdown to 45853
+[22:53:19.987] [SEVERE ] updating countdown to 44840
+[22:53:21.001] [SEVERE ] updating countdown to 43826
+[22:53:22.016] [SEVERE ] updating countdown to 42811
+[22:53:22.275] [SEVERE ] exit button pressed
+[22:53:23.020] [SEVERE ] updating countdown to 41807
+[22:53:23.023] [SEVERE ] updating countdown to 60000
+[22:53:23.130] [SEVERE ] removing tokens from slot 0
+[22:53:23.131] [SEVERE ] removing card from slot 0
+[22:53:23.239] [SEVERE ] removing tokens from slot 1
+[22:53:23.239] [SEVERE ] removing card from slot 1
+[22:53:23.344] [SEVERE ] removing tokens from slot 2
+[22:53:23.350] [SEVERE ] removing card from slot 2
+[22:53:23.457] [SEVERE ] removing tokens from slot 3
+[22:53:23.457] [SEVERE ] removing card from slot 3
+[22:53:23.458] [SEVERE ] removing player 2 token from slot 3
+[22:53:23.567] [SEVERE ] removing tokens from slot 4
+[22:53:23.568] [SEVERE ] removing card from slot 4
+[22:53:23.675] [SEVERE ] removing tokens from slot 5
+[22:53:23.675] [SEVERE ] removing card from slot 5
+[22:53:23.782] [SEVERE ] removing tokens from slot 6
+[22:53:23.782] [SEVERE ] removing card from slot 6
+[22:53:23.783] [SEVERE ] removing player 2 token from slot 6
+[22:53:23.893] [SEVERE ] removing tokens from slot 7
+[22:53:23.893] [SEVERE ] removing card from slot 7
+[22:53:24.004] [SEVERE ] removing tokens from slot 8
+[22:53:24.005] [SEVERE ] removing card from slot 8
+[22:53:24.114] [SEVERE ] removing tokens from slot 9
+[22:53:24.114] [SEVERE ] removing card from slot 9
+[22:53:24.215] [SEVERE ] removing tokens from slot 10
+[22:53:24.216] [SEVERE ] removing card from slot 10
+[22:53:24.216] [SEVERE ] removing player 2 token from slot 10
+[22:53:24.329] [SEVERE ] removing tokens from slot 11
+[22:53:24.329] [SEVERE ] removing card from slot 11
+[22:53:24.329] [SEVERE ] announcing winner(s): player 1, player 2
+[22:53:24.332] [INFO   ] thread dealer terminated.
+[22:53:24.334] [INFO   ] thread dealer terminated.
+[22:53:24.334] [SEVERE ] thanks for playing... it was fun!
+[22:53:24.334] [INFO   ] thread main terminated.
