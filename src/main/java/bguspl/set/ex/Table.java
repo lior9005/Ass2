@@ -100,6 +100,7 @@ public class Table {
         slotToCard[slot] = card;
 
         // TODO implement
+        env.ui.placeCard(card, slot);
     }
 
     /**
@@ -146,8 +147,12 @@ public class Table {
         return slotToCard;
     }
 
-    public int cardAtSlot(int slot){
-        return slotToCard(slot);
+    public Integer cardAtSlot(int slot){
+        return slotToCard[slot];
+    }
+
+    public Integer slotOfCard(int card){
+        return cardToSlot[card];
     }
 }
 
