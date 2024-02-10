@@ -3,6 +3,7 @@ package bguspl.set.ex;
 import bguspl.set.Env;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -50,6 +51,10 @@ public class Dealer implements Runnable {
     @Override
     public void run() {
         env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
+        for(int i=0; i<players.length; i++){       //new for loop
+            Thread playerT = new Thread(players[i], "player " + (i+1));
+            playerT.start();
+        }
         while (!shouldFinish()) {
             placeCardsOnTable();
             timerLoop();
@@ -64,6 +69,7 @@ public class Dealer implements Runnable {
      * The inner loop of the dealer thread that runs as long as the countdown did not time out.
      */
     private void timerLoop() {
+        reshuffleTime = System.currentTimeMillis()+ env.config.turnTimeoutMillis;
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
@@ -77,6 +83,10 @@ public class Dealer implements Runnable {
      */
     public void terminate() {
         // TODO implement
+        terminate = true;
+        for(Player player : players){
+            player.terminate();
+        }
     }
 
     /**
@@ -93,6 +103,11 @@ public class Dealer implements Runnable {
      */
     private void removeCardsFromTable() {
         // TODO implement
+        for (int slot = 0; slot < env.config.tableSize; slot++) {
+            if(table.cardAtSlot(slot) != -1)
+                deck.add(table.cardAtSlot(slot));
+            table.removeCard(slot);
+        }
     }
 
     /**
@@ -100,6 +115,19 @@ public class Dealer implements Runnable {
      */
     private void placeCardsOnTable() {
         // TODO implement
+        int numOfCards = table.countCards();
+        int slot = 0;
+        Integer[] board = table.getSlotToCard();
+        while(!deck.isEmpty() && numOfCards < board.length){
+            if(board[slot] == null){
+                Random random = new Random();
+                int randomIndex = random.nextInt(deck.size());
+                int randomCard = deck.remove(randomIndex);
+                table.placeCard(randomCard, slot);
+                numOfCards++;
+            }
+            slot++;
+        }
     }
 
     /**
@@ -107,6 +135,10 @@ public class Dealer implements Runnable {
      */
     private void sleepUntilWokenOrTimeout() {
         // TODO implement
+        try{
+            Thread.sleep(1000);
+        } catch (InterruptedException ignored) {
+        }
     }
 
     /**
@@ -114,6 +146,11 @@ public class Dealer implements Runnable {
      */
     private void updateTimerDisplay(boolean reset) {
         // TODO implement
+        if(reset){
+            env.ui.setCountdown(reshuffleTime-System.currentTimeMillis(), reset);
+        }
+        else
+            env.ui.setCountdown(reshuffleTime-System.currentTimeMillis(), reset);
     }
 
     /**
