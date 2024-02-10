@@ -155,8 +155,13 @@ public class Table {
         return slotToCard;
     }
 
-    public int cardAtSlot(int slot){
+    public Integer cardAtSlot(int slot){
         return slotToCard[slot];
+    }
+
+    public Integer slotOfCard(int card){
+        return cardToSlot[card];
+
     }
 }
 
