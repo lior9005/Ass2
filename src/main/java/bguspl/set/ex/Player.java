@@ -60,6 +60,8 @@ public class Player implements Runnable {
 
     private volatile int counter;
 
+    private volatile boolean frozen;
+
     private Dealer dealer;
     /**
      * The class constructor.
@@ -78,6 +80,7 @@ public class Player implements Runnable {
         this.human = human;
         actionsQueue = new ArrayBlockingQueue<>(3);
         this.counter = 0;
+        this.frozen = false;
     }
 
     /**
@@ -95,16 +98,14 @@ public class Player implements Runnable {
             try {
                  slotAction = actionsQueue.take();
             } catch (InterruptedException ignored) {}
-            //aiThread.interrupt();
+           if(!human) {aiThread.interrupt();}
             synchronized (table){
                 if (table.containPlayerToken(id, slotAction)){
                     table.removeToken(id, slotAction);
-                    env.ui.removeToken(id, slotAction);
                     counter--;
                 }
                 else if (counter != 3){
                     table.placeToken(id,slotAction);
-                    env.ui.placeToken(id, slotAction);
                     counter++;
                     if (counter == 3) {
                         dealer.checkSet(id);
@@ -156,9 +157,11 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
-        try {
-            actionsQueue.put(slot);
-        } catch (InterruptedException ignored) {}
+        if((!frozen) && (table.getSlotToCard()[slot] != null)){
+            try {
+                actionsQueue.put(slot);
+            } catch (InterruptedException ignored) {}
+        }
     }
 
     /**
@@ -169,13 +172,16 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
+        this.score++;
+        
+        env.ui.setScore(id, score);
+        frozen = true;
         try{    
             Thread.sleep(env.config.pointFreezeMillis);
         } catch (InterruptedException ignored) {}
-        this.score++;
-        
+        frozen = false;
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
-        env.ui.setScore(id, ++score);
+
     }
 
     /**
@@ -183,10 +189,16 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
-        try{    
-            Thread.sleep(env.config.penaltyFreezeMillis);
-        } catch (InterruptedException ignored) {}
+        frozen = true;
+        long endFreezeTime = System.currentTimeMillis()+env.config.penaltyFreezeMillis;
         env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
+        while(System.currentTimeMillis()<endFreezeTime){
+            try{    
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {}
+            env.ui.setFreeze(id, endFreezeTime-System.currentTimeMillis());
+        }
+        frozen = false;
     }
 
     public int score() {
