@@ -74,7 +74,7 @@ public class Dealer implements Runnable {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            removeCardsFromTable();
+            //removeCardsFromTable();
             placeCardsOnTable();
         }
     }
@@ -198,9 +198,9 @@ public class Dealer implements Runnable {
         terminate();
     }
 
-    private synchronized void checkSet(int playerID) {  //new function
+    public synchronized void checkSet(int playerID) {  //new function
         synchronized(table){
-            if(players[playerID].getCounter == 3){
+            if(players[playerID].getCounter() == 3){
                 int[] set = new int[3];
                 int j=0;
                 for(int i = 0 ; i< env.config.tableSize; i++){

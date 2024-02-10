@@ -56,6 +56,9 @@ public class Table {
 
         this(env, new Integer[env.config.tableSize], new Integer[env.config.deckSize]);
         this.playerTokens = new Boolean[env.config.tableSize][env.config.players];
+        for (int i = 0; i < env.config.tableSize; i++) {
+            Arrays.fill(playerTokens[i], false);
+        }
     }
 
     /**
@@ -100,6 +103,7 @@ public class Table {
         slotToCard[slot] = card;
 
         // TODO implement
+        env.ui.placeCard(card, slot);
     }
 
     /**
@@ -124,7 +128,8 @@ public class Table {
      * @param slot   - the slot on which to place the token.
      */
     public void placeToken(int player, int slot) {
-        // TODO implement
+        playerTokens[slot][player] = true;
+        env.ui.placeToken(player, slot);
     }
 
     /**
@@ -134,9 +139,13 @@ public class Table {
      * @return       - true iff a token was successfully removed.
      */
     public boolean removeToken(int player, int slot) {
-        // TODO implement
-
-        return false;
+        if (!playerTokens[slot][player]) return false;
+        else{
+            playerTokens[slot][player] = false;
+            env.ui.removeToken(player, slot);
+            return true;
+        }
+    // TODO implement
     }
     public boolean containPlayerToken(int player, int slot) {
         return playerTokens[slot][player];
@@ -147,7 +156,7 @@ public class Table {
     }
 
     public int cardAtSlot(int slot){
-        return slotToCard(slot);
+        return slotToCard[slot];
     }
 }
 

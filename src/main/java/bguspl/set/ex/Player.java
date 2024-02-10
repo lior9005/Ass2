@@ -92,22 +92,26 @@ public class Player implements Runnable {
         while (!terminate) {
             // TODO implement main player loop
             Integer slotAction = null;
-            while (counter < 3){
-                slotAction = actionsQueue.take();
-                aiThread.interrupt();
-                synchronized (table){
-                    if (table.containPlayerToken(id, slotAction)){
-                        table.removeToken(id, slotAction);
-                        counter--;
-                    }
-                    else{
-                        table.placeToken(id,slotAction);
-                        counter++;
+            try {
+                 slotAction = actionsQueue.take();
+            } catch (InterruptedException ignored) {}
+            //aiThread.interrupt();
+            synchronized (table){
+                if (table.containPlayerToken(id, slotAction)){
+                    table.removeToken(id, slotAction);
+                    env.ui.removeToken(id, slotAction);
+                    counter--;
+                }
+                else if (counter != 3){
+                    table.placeToken(id,slotAction);
+                    env.ui.placeToken(id, slotAction);
+                    counter++;
+                    if (counter == 3) {
+                        dealer.checkSet(id);
                     }
                 }
             }
-            dealer.checkSet(id); 
-        }     
+        }    
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
