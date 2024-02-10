@@ -3,6 +3,7 @@ package bguspl.set.ex;
 import bguspl.set.Env;
 
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -77,7 +78,7 @@ public class Dealer implements Runnable {
             placeCardsOnTable();
         }
     }
-
+//
     /**
      * Called when the game should be terminated.
      */
@@ -158,6 +159,15 @@ public class Dealer implements Runnable {
      */
     private void removeAllCardsFromTable() {
         // TODO implement
+        for(int slot=0; slot<env.config.tableSize; slot++){
+            deck.add(table.cardAtSlot(slot));
+            table.removeCard(slot);
+            for(int i=0; i<table.playerTokens[slot].length; i++){
+                if(table.removeToken(i, slot)){
+                    players[i].decreaseCounter();
+                }
+            }
+        }
     }
 
     /**
@@ -165,5 +175,61 @@ public class Dealer implements Runnable {
      */
     private void announceWinners() {
         // TODO implement
+        int maxScore = 0;
+        int amount = 0;
+        for(Player player : players){
+            player.terminate();
+            if(player.score()> maxScore){
+                maxScore = player.score();
+                amount = 1;
+            }
+            else if(player.score() == maxScore)    
+                amount++;
+        }
+        int[] winners = new int[amount];
+        int index = 0;
+        for(Player player : players){
+            if(player.score()== maxScore){
+                winners[index]= player.id;
+                index++;
+            }
+        }
+        env.ui.announceWinner(winners);
+        terminate();
+    }
+
+    private synchronized void checkSet(int playerID) {  //new function
+        synchronized(table){
+            if(players[playerID].getCounter == 3){
+                int[] set = new int[3];
+                int j=0;
+                for(int i = 0 ; i< env.config.tableSize; i++){
+                    if(table.playerTokens[i][playerID])
+                        set[j] = table.slotToCard[i];
+                        j++;
+                }
+                if(env.util.testSet(set))
+                    correctSet(set, playerID);
+                else
+                    incorrectSet(playerID);
+            }
+        }
+    }
+
+    private void correctSet(int[] set, int playerID){
+        for(int card : set){
+            int slot = table.cardToSlot[card];
+            table.removeCard(slot);
+            for(int i=0; i<table.playerTokens[slot].length; i++){
+                if(table.removeToken(i, slot)){
+                    players[i].decreaseCounter();
+                }
+            }
+        }
+        players[playerID].point();
+    }
+
+    private void incorrectSet(int playerID){
+        players[playerID].penalty();
     }
 }
