@@ -1,5 +1,10 @@
 package bguspl.set.ex;
 
+import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import bguspl.set.Env;
 
 /**
@@ -50,6 +55,14 @@ public class Player implements Runnable {
      */
     private int score;
 
+    //new
+    private ArrayBlockingQueue<Integer> actionsQueue = new ArrayBlockingQueue<>(3);
+
+    private volatile int counter;
+
+    private volatile boolean frozen;
+
+    private Dealer dealer;
     /**
      * The class constructor.
      *
@@ -61,9 +74,13 @@ public class Player implements Runnable {
      */
     public Player(Env env, Dealer dealer, Table table, int id, boolean human) {
         this.env = env;
+        this.dealer = dealer;
         this.table = table;
         this.id = id;
         this.human = human;
+        actionsQueue = new ArrayBlockingQueue<>(3);
+        this.counter = 0;
+        this.frozen = false;
     }
 
     /**
@@ -77,10 +94,29 @@ public class Player implements Runnable {
 
         while (!terminate) {
             // TODO implement main player loop
-        }
+            Integer slotAction = null;
+            try {
+                 slotAction = actionsQueue.take();
+            } catch (InterruptedException ignored) {}
+           if(!human) {aiThread.interrupt();}
+            synchronized (table){
+                if (table.containPlayerToken(id, slotAction)){
+                    table.removeToken(id, slotAction);
+                    counter--;
+                }
+                else if (counter != 3){
+                    table.placeToken(id,slotAction);
+                    counter++;
+                    if (counter == 3) {
+                        dealer.checkSet(id);
+                    }
+                }
+            }
+        }    
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
+    
 
     /**
      * Creates an additional thread for an AI (computer) player. The main loop of this thread repeatedly generates
@@ -91,7 +127,12 @@ public class Player implements Runnable {
         aiThread = new Thread(() -> {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
-                // TODO implement player key press simulator
+                Random randomNumber = new Random();
+                int slot = randomNumber.nextInt(env.config.tableSize);
+                try {
+                    actionsQueue.put(slot);
+                } catch (InterruptedException ignored) {}
+            //why???    
                 try {
                     synchronized (this) { wait(); }
                 } catch (InterruptedException ignored) {}
@@ -106,6 +147,7 @@ public class Player implements Runnable {
      */
     public void terminate() {
         // TODO implement
+        terminate = true;
     }
 
     /**
@@ -115,6 +157,11 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
+        if((!frozen) && (table.getSlotToCard()[slot] != null)){
+            try {
+                actionsQueue.put(slot);
+            } catch (InterruptedException ignored) {}
+        }
     }
 
     /**
@@ -125,9 +172,16 @@ public class Player implements Runnable {
      */
     public void point() {
         // TODO implement
-
+        this.score++;
+        
+        env.ui.setScore(id, score);
+        frozen = true;
+        try{    
+            Thread.sleep(env.config.pointFreezeMillis);
+        } catch (InterruptedException ignored) {}
+        frozen = false;
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
-        env.ui.setScore(id, ++score);
+
     }
 
     /**
@@ -135,9 +189,27 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
+        frozen = true;
+        long endFreezeTime = System.currentTimeMillis()+env.config.penaltyFreezeMillis;
+        env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
+        while(System.currentTimeMillis()<endFreezeTime){
+            try{    
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {}
+            env.ui.setFreeze(id, endFreezeTime-System.currentTimeMillis());
+        }
+        frozen = false;
     }
 
     public int score() {
         return score;
+    }
+
+    public void decreaseCounter(){
+        counter--;
+    }
+
+    public int getCounter(){
+        return counter;
     }
 }
