@@ -77,7 +77,7 @@ public class Dealer implements Runnable {
             placeCardsOnTable();
         }
     }
-
+//
     /**
      * Called when the game should be terminated.
      */
