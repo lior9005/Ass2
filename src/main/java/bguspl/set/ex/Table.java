@@ -112,6 +112,10 @@ public class Table {
         } catch (InterruptedException ignored) {}
 
         // TODO implement
+        cardToSlot[slotToCard[slot]] = null;
+        slotToCard[slot] = null;
+        env.ui.removeTokens(slot);
+        env.ui.removeCard(slot);
     }
 
     /**
@@ -131,9 +135,19 @@ public class Table {
      */
     public boolean removeToken(int player, int slot) {
         // TODO implement
+
         return false;
     }
     public boolean containPlayerToken(int player, int slot) {
         return playerTokens[slot][player];
     }
+
+    public Integer[] getSlotToCard(){
+        return slotToCard;
+    }
+
+    public int cardAtSlot(int slot){
+        return slotToCard(slot);
+    }
 }
+
