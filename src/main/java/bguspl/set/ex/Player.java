@@ -1,6 +1,7 @@
 package bguspl.set.ex;
 
 import java.util.Queue;
+import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -56,6 +57,10 @@ public class Player implements Runnable {
 
     //new
     private ArrayBlockingQueue<Integer> actionsQueue = new ArrayBlockingQueue<>(3);
+
+    private volatile int counter;
+
+    private Dealer dealer;
     /**
      * The class constructor.
      *
@@ -67,10 +72,12 @@ public class Player implements Runnable {
      */
     public Player(Env env, Dealer dealer, Table table, int id, boolean human) {
         this.env = env;
+        this.dealer = dealer;
         this.table = table;
         this.id = id;
         this.human = human;
         actionsQueue = new ArrayBlockingQueue<>(3);
+        this.counter = 0;
     }
 
     /**
@@ -84,26 +91,27 @@ public class Player implements Runnable {
 
         while (!terminate) {
             // TODO implement main player loop
-            Integer slotAction;
-            try {
+            Integer slotAction = null;
+            while (counter < 3){
                 slotAction = actionsQueue.take();
-                }catch (InterruptedException ignored) {}
+                aiThread.interrupt();
+                synchronized (table){
+                    if (table.containPlayerToken(id, slotAction)){
+                        table.removeToken(id, slotAction);
+                        counter--;
+                    }
+                    else{
+                        table.placeToken(id,slotAction);
+                        counter++;
+                    }
+                }
             }
-            if (table.containPlayerToken(score, id)){
-                table.removeToken(id, slotAction);
-            }
-            else{
-                synchronized (table) {
-                table.placeToken(id,slotAction);}
-            }
-                        
-             
-
-
-
+            dealer.checkSet(id); 
+        }     
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
+    
 
     /**
      * Creates an additional thread for an AI (computer) player. The main loop of this thread repeatedly generates
@@ -114,8 +122,12 @@ public class Player implements Runnable {
         aiThread = new Thread(() -> {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
-                // TODO implement player key press simulator
-                ArrayBlockingQueue<Integer> actionsQueue = new ArrayBlockingQueue<>(3);
+                Random randomNumber = new Random();
+                int slot = randomNumber.nextInt(env.config.tableSize);
+                try {
+                    actionsQueue.put(slot);
+                } catch (InterruptedException ignored) {}
+            //why???    
                 try {
                     synchronized (this) { wait(); }
                 } catch (InterruptedException ignored) {}
@@ -170,9 +182,18 @@ public class Player implements Runnable {
         try{    
             Thread.sleep(env.config.penaltyFreezeMillis);
         } catch (InterruptedException ignored) {}
+        env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
     }
 
     public int score() {
         return score;
+    }
+
+    public void decreaseCounter(){
+        counter--;
+    }
+
+    public int getCounter(){
+        return counter;
     }
 }
