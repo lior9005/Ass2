@@ -96,9 +96,14 @@ public class Player implements Runnable {
             // TODO implement main player loop
             Integer slotAction = null;
             try {
-                 slotAction = actionsQueue.take();
+                    slotAction = actionsQueue.take();
             } catch (InterruptedException ignored) {}
-           if(!human) {aiThread.interrupt();}
+            while(table.cardAtSlot(slotAction) == null){
+                synchronized(dealer){
+                    try{dealer.wait();
+                    }catch (InterruptedException ignored) {}
+                }
+            }
             synchronized (table){
                 if (table.containPlayerToken(id, slotAction)){
                     table.removeToken(id, slotAction);
@@ -128,14 +133,10 @@ public class Player implements Runnable {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
                 Random randomNumber = new Random();
-                int slot = randomNumber.nextInt(env.config.tableSize);
                 try {
-                    actionsQueue.put(slot);
-                } catch (InterruptedException ignored) {}
-            //why???    
-                try {
-                    synchronized (this) { wait(); }
-                } catch (InterruptedException ignored) {}
+                    actionsQueue.put(randomNumber.nextInt(env.config.tableSize));
+                } catch (InterruptedException ignored) {} //generate a random key press
+                
             }
             env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
         }, "computer-" + id);
@@ -157,7 +158,7 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
-        if((!frozen) && (table.getSlotToCard()[slot] != null)){
+        if(human){
             try {
                 actionsQueue.put(slot);
             } catch (InterruptedException ignored) {}
@@ -189,7 +190,6 @@ public class Player implements Runnable {
      */
     public void penalty() {
         // TODO implement
-        frozen = true;
         long endFreezeTime = System.currentTimeMillis()+env.config.penaltyFreezeMillis;
         env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
         while(System.currentTimeMillis()<endFreezeTime){
@@ -198,7 +198,7 @@ public class Player implements Runnable {
             } catch (InterruptedException ignored) {}
             env.ui.setFreeze(id, endFreezeTime-System.currentTimeMillis());
         }
-        frozen = false;
+
     }
 
     public int score() {
