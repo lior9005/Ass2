@@ -121,7 +121,7 @@ public class Dealer implements Runnable {
     /**
      * Check if any cards can be removed from the deck and placed on the table.
      */
-    private void placeCardsOnTable() {
+    private synchronized void placeCardsOnTable() {
         // TODO implement
         synchronized(table){
             int numOfCards = table.countCards();
@@ -138,6 +138,7 @@ public class Dealer implements Runnable {
                 slot++;
             }
         }
+        notifyAll();
     }
 
     /**
