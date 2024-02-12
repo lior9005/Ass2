@@ -259,6 +259,7 @@ public class Dealer implements Runnable {
             players[playerID].penalty();
             }
         );
+        players[playerID].setFrozen();
         penaltyPlayer.start();
     }
 }

@@ -98,9 +98,17 @@ public class Player implements Runnable {
             try {
                     slotAction = actionsQueue.take();
             } catch (InterruptedException ignored) {}
-            while(table.cardAtSlot(slotAction) == null){
+            while(frozen){
+                synchronized(this){
+                    try{
+                        wait();
+                    }catch (InterruptedException ignored) {}
+                }
+            }
+            while(table.cardAtSlot(slotAction) == null){ 
                 synchronized(dealer){
-                    try{dealer.wait();
+                    try{
+                        dealer.wait();
                     }catch (InterruptedException ignored) {}
                 }
             }
@@ -188,7 +196,7 @@ public class Player implements Runnable {
     /**
      * Penalize a player and perform other related actions.
      */
-    public void penalty() {
+    public synchronized void penalty() {
         // TODO implement
         long endFreezeTime = System.currentTimeMillis()+env.config.penaltyFreezeMillis;
         env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
@@ -198,7 +206,8 @@ public class Player implements Runnable {
             } catch (InterruptedException ignored) {}
             env.ui.setFreeze(id, endFreezeTime-System.currentTimeMillis());
         }
-
+        frozen = false;
+        notifyAll();
     }
 
     public int score() {
@@ -212,4 +221,8 @@ public class Player implements Runnable {
     public int getCounter(){
         return counter;
     }
+    public void setFrozen(){
+        frozen = true;
+    }
 }
+
