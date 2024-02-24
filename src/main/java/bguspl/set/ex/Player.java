@@ -56,11 +56,9 @@ public class Player implements Runnable {
     private int score;
 
     //new
-    private ArrayBlockingQueue<Integer> actionsQueue = new ArrayBlockingQueue<>(3);
+    private ArrayBlockingQueue<Integer> actionsQueue;
 
-    private volatile int counter;
-
-    private volatile boolean frozen;
+    private volatile int setStatus;
 
     private Dealer dealer;
     /**
@@ -72,15 +70,14 @@ public class Player implements Runnable {
      * @param id     - the id of the player.
      * @param human  - true iff the player is a human player (i.e. input is provided manually, via the keyboard).
      */
-    public Player(Env env, Dealer dealer, Table table, int id, boolean human) {
+    public Player(Env env, Dealer dealer, Table table, int id, boolean human) {                                                       //fix
         this.env = env;
         this.dealer = dealer;
         this.table = table;
         this.id = id;
         this.human = human;
         actionsQueue = new ArrayBlockingQueue<>(3);
-        this.counter = 0;
-        this.frozen = false;
+        this.setStatus = 0;
     }
 
     /**
@@ -96,22 +93,18 @@ public class Player implements Runnable {
             // TODO implement main player loop
             Integer slotAction = null;
             try {
-                 slotAction = actionsQueue.take();
+                slotAction = actionsQueue.take();
+                table.playerLock();
+                boolean set = table.keyPressed(slotAction, id);
+                table.playerUnlock();
+                if(set){
+                    dealer.declareSet(id);
+                    if(setStatus == 1)
+                        point();
+                    else if(setStatus == -1)
+                        penalty();
+                }
             } catch (InterruptedException ignored) {}
-           if(!human) {aiThread.interrupt();}
-            synchronized (table){
-                if (table.containPlayerToken(id, slotAction)){
-                    table.removeToken(id, slotAction);
-                    counter--;
-                }
-                else if (counter != 3){
-                    table.placeToken(id,slotAction);
-                    counter++;
-                    if (counter == 3) {
-                        dealer.checkSet(id);
-                    }
-                }
-            }
         }    
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
@@ -128,14 +121,10 @@ public class Player implements Runnable {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
                 Random randomNumber = new Random();
-                int slot = randomNumber.nextInt(env.config.tableSize);
                 try {
-                    actionsQueue.put(slot);
-                } catch (InterruptedException ignored) {}
-            //why???    
-                try {
-                    synchronized (this) { wait(); }
-                } catch (InterruptedException ignored) {}
+                    actionsQueue.put(randomNumber.nextInt(env.config.tableSize));
+                } catch (InterruptedException ignored) {} //generate a random key press
+                
             }
             env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
         }, "computer-" + id);
@@ -148,6 +137,9 @@ public class Player implements Runnable {
     public void terminate() {
         // TODO implement
         terminate = true;
+        if(!human)
+            aiThread.interrupt();
+        playerThread.interrupt();
     }
 
     /**
@@ -157,7 +149,7 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         // TODO implement
-        if((!frozen) && (table.getSlotToCard()[slot] != null)){
+        if(human){
             try {
                 actionsQueue.put(slot);
             } catch (InterruptedException ignored) {}
@@ -170,46 +162,46 @@ public class Player implements Runnable {
      * @post - the player's score is increased by 1.
      * @post - the player's score is updated in the ui.
      */
-    public void point() {
+    public void point() {                                                       //fix
         // TODO implement
-        this.score++;
-        
-        env.ui.setScore(id, score);
-        frozen = true;
         try{    
+            this.score++;
+            env.ui.setScore(id, score);
             Thread.sleep(env.config.pointFreezeMillis);
-        } catch (InterruptedException ignored) {}
-        frozen = false;
-        int ignored = table.countCards(); // this part is just for demonstration in the unit tests
-
+            setStatus = 0;
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
+        //int ignored = table.countCards(); // this part is just for demonstration in the unit tests
     }
 
     /**
      * Penalize a player and perform other related actions.
      */
-    public void penalty() {
+    public synchronized void penalty() {                                                       //fix
         // TODO implement
-        frozen = true;
-        long endFreezeTime = System.currentTimeMillis()+env.config.penaltyFreezeMillis;
-        env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
-        while(System.currentTimeMillis()<endFreezeTime){
-            try{    
+        try{
+            long endFreezeTime = System.currentTimeMillis()+env.config.penaltyFreezeMillis;
+            env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
+            while(System.currentTimeMillis()<endFreezeTime){  
                 Thread.sleep(1000);
-            } catch (InterruptedException ignored) {}
-            env.ui.setFreeze(id, endFreezeTime-System.currentTimeMillis());
+                env.ui.setFreeze(id, endFreezeTime-System.currentTimeMillis());
+            }
+            setStatus = 0; 
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
         }
-        frozen = false;
     }
 
     public int score() {
         return score;
     }
 
-    public void decreaseCounter(){
-        counter--;
+    public Thread getPlayerThread(){                                                       //fix
+        return playerThread;
     }
 
-    public int getCounter(){
-        return counter;
+    public void setStatus(int status){
+        setStatus = status;
     }
 }
