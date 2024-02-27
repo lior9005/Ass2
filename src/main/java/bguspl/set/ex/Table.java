@@ -96,12 +96,15 @@ public class Table {
         return cards;
     }
 
-    public boolean keyPressed(int slot, int playerID) {
+    public boolean keyPressed(int slot, int playerID) { //handle player key press, returns true if the player has 3 tokens on the table
         if(slotToCard[slot] != null){
+
+            //if the player has a token on the slot, remove it
             if(playerTokens[slot][playerID])
                 removeToken(playerID, slot);
-            else{
+            else{ 
                 int numOfTokens = 0;
+                //check the number of tokens the player has on the table
                 for(int i=0; i<env.config.tableSize; i++){
                     if(playerTokens[i][playerID])
                         numOfTokens++;
@@ -189,7 +192,7 @@ public class Table {
         return slotToCard[slot];
     }
 
-    public synchronized void playerLock() {
+    public synchronized void playerLock() { //see that no dealer is trying to access the table
         while(!allowPlayer()){
             try{    
                 wait();

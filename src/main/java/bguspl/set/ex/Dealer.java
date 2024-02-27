@@ -117,7 +117,7 @@ public class Dealer implements Runnable {
     /**
      * Checks cards should be removed from the table and removes them.
      */
-    private void removeCardsFromTable() {                                                       //fix
+    private void removeCardsFromTable() {   //fix??
         // TODO implement
         if(!waitingSets.isEmpty()){
             checkSetVector();
@@ -214,11 +214,12 @@ public class Dealer implements Runnable {
         terminate();
     }
 
-    public void declareSet(int playerID){                           //maybe after adding to the vector, the dealer will check the set before the playerthread wil wait...
+    public void declareSet(int playerID){  //maybe after adding to the vector, the dealer will check the set before the playerthread will wait...
         waitingSets.add(playerID);
         try{
-            dealerThread.interrupt();
-            Thread.sleep(Long.MAX_VALUE);
+            //
+            dealerThread.interrupt(); //where the logic?
+            Thread.sleep(Long.MAX_VALUE); //why ?
         } catch (InterruptedException ignored) {}
     }
 

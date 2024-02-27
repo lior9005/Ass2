@@ -90,14 +90,21 @@ public class Player implements Runnable {
         if (!human) createArtificialIntelligence();
 
         while (!terminate) {
-            // TODO implement main player loop
             Integer slotAction = null;
             try {
                 slotAction = actionsQueue.take();
+                
+                //try to access the table
                 table.playerLock();
-                boolean set = table.keyPressed(slotAction, id);
+
+                //check if there is a set 
+                boolean set = table.keyPressed(slotAction, id); 
+
+                //release the table
                 table.playerUnlock();
                 if(set){
+
+                    //tell the dealer that there is a set to check, and wait for the dealer to check it
                     dealer.declareSet(id);
                     if(setStatus == 1)
                         point();
@@ -189,7 +196,7 @@ public class Player implements Runnable {
             }
             setStatus = 0; 
         } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt();//??
         }
     }
 
