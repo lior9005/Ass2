@@ -134,8 +134,6 @@ public class Table {
 
         cardToSlot[card] = slot;
         slotToCard[slot] = card;
-
-        // TODO implement
         env.ui.placeCard(card, slot);
     }
 
@@ -148,7 +146,7 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
 
-        // TODO implement
+
         cardToSlot[slotToCard[slot]] = null;
         slotToCard[slot] = null;
         removeTokens(slot);
@@ -161,7 +159,6 @@ public class Table {
      * @param slot   - the slot on which to place the token.
      */
     public void placeToken(int player, int slot) {
-        // TODO implement
         playerTokens[slot][player] = true;
         env.ui.placeToken(player, slot);
     }
@@ -196,7 +193,9 @@ public class Table {
         while(!allowPlayer()){
             try{    
                 wait();
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
         }
         activePlayers++;
     }
@@ -209,7 +208,9 @@ public class Table {
         while(!allowDealer()) {
             try{    
                 wait();
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
         }
         waitingDealer--;
         activeDealer++;

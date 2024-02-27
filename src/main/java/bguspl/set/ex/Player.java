@@ -1,9 +1,9 @@
 package bguspl.set.ex;
 
-import java.util.Queue;
+
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+
 
 import bguspl.set.Env;
 
@@ -61,6 +61,8 @@ public class Player implements Runnable {
     private volatile int setStatus;
 
     private Dealer dealer;
+
+    private Object playerLock;
     /**
      * The class constructor.
      *
@@ -78,6 +80,7 @@ public class Player implements Runnable {
         this.human = human;
         actionsQueue = new ArrayBlockingQueue<>(3);
         this.setStatus = 0;
+        this.playerLock = new Object();
     }
 
     /**
@@ -103,7 +106,6 @@ public class Player implements Runnable {
                 //release the table
                 table.playerUnlock();
                 if(set){
-
                     //tell the dealer that there is a set to check, and wait for the dealer to check it
                     dealer.declareSet(id);
                     if(setStatus == 1)
@@ -142,10 +144,11 @@ public class Player implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
-        // TODO implement
+
         terminate = true;
-        if(!human)
+        if(!human){
             aiThread.interrupt();
+        }
         playerThread.interrupt();
     }
 
@@ -155,7 +158,7 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        // TODO implement
+
         if(human){
             try {
                 actionsQueue.put(slot);
@@ -169,8 +172,8 @@ public class Player implements Runnable {
      * @post - the player's score is increased by 1.
      * @post - the player's score is updated in the ui.
      */
-    public void point() {                                                       //fix
-        // TODO implement
+    public void point() {                                                    
+
         try{    
             this.score++;
             env.ui.setScore(id, score);
@@ -185,8 +188,8 @@ public class Player implements Runnable {
     /**
      * Penalize a player and perform other related actions.
      */
-    public synchronized void penalty() {                                                       //fix
-        // TODO implement
+    public synchronized void penalty() {                                                      
+
         try{
             long endFreezeTime = System.currentTimeMillis()+env.config.penaltyFreezeMillis;
             env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
@@ -204,11 +207,15 @@ public class Player implements Runnable {
         return score;
     }
 
-    public Thread getPlayerThread(){                                                       //fix
+    public Thread getPlayerThread(){                                                    
         return playerThread;
     }
 
     public void setStatus(int status){
         setStatus = status;
+    }
+
+    public Object getPlayerLock(){
+        return playerLock;
     }
 }
