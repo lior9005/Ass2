@@ -96,15 +96,12 @@ public class Table {
         return cards;
     }
 
-    public boolean keyPressed(int slot, int playerID) { //handle player key press, returns true if the player has 3 tokens on the table
+    public boolean keyPressed(int slot, int playerID) {
         if(slotToCard[slot] != null){
-
-            //if the player has a token on the slot, remove it
             if(playerTokens[slot][playerID])
                 removeToken(playerID, slot);
-            else{ 
+            else{
                 int numOfTokens = 0;
-                //check the number of tokens the player has on the table
                 for(int i=0; i<env.config.tableSize; i++){
                     if(playerTokens[i][playerID])
                         numOfTokens++;
@@ -134,6 +131,8 @@ public class Table {
 
         cardToSlot[card] = slot;
         slotToCard[slot] = card;
+
+        // TODO implement
         env.ui.placeCard(card, slot);
     }
 
@@ -146,7 +145,7 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
 
-
+        // TODO implement
         cardToSlot[slotToCard[slot]] = null;
         slotToCard[slot] = null;
         removeTokens(slot);
@@ -159,6 +158,7 @@ public class Table {
      * @param slot   - the slot on which to place the token.
      */
     public void placeToken(int player, int slot) {
+        // TODO implement
         playerTokens[slot][player] = true;
         env.ui.placeToken(player, slot);
     }
@@ -189,13 +189,11 @@ public class Table {
         return slotToCard[slot];
     }
 
-    public synchronized void playerLock() { //see that no dealer is trying to access the table
+    public synchronized void playerLock() {
         while(!allowPlayer()){
             try{    
                 wait();
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-            }
+            } catch (InterruptedException ignored) {}
         }
         activePlayers++;
     }
@@ -208,9 +206,7 @@ public class Table {
         while(!allowDealer()) {
             try{    
                 wait();
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-            }
+            } catch (InterruptedException ignored) {}
         }
         waitingDealer--;
         activeDealer++;
