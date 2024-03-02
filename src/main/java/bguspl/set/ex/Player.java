@@ -1,9 +1,9 @@
 package bguspl.set.ex;
 
-
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
-
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import bguspl.set.Env;
 
@@ -59,10 +59,8 @@ public class Player implements Runnable {
     private ArrayBlockingQueue<Integer> actionsQueue;
 
     private volatile int setStatus;
-
-    private Dealer dealer;
-
     private Object playerLock;
+    private Dealer dealer;
     /**
      * The class constructor.
      *
@@ -93,20 +91,14 @@ public class Player implements Runnable {
         if (!human) createArtificialIntelligence();
 
         while (!terminate) {
-            Integer slotAction = null;
+            // TODO implement main player loop
             try {
+                Integer slotAction = null;
                 slotAction = actionsQueue.take();
-                
-                //try to access the table
                 table.playerLock();
-
-                //check if there is a set 
-                boolean set = table.keyPressed(slotAction, id); 
-
-                //release the table
+                boolean set = table.keyPressed(slotAction, id);
                 table.playerUnlock();
                 if(set){
-                    //tell the dealer that there is a set to check, and wait for the dealer to check it
                     dealer.declareSet(id);
                     if(setStatus == 1)
                         point();
@@ -118,7 +110,10 @@ public class Player implements Runnable {
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
-    
+
+    public Object getPlayerLock(){
+        return playerLock;
+    }
 
     /**
      * Creates an additional thread for an AI (computer) player. The main loop of this thread repeatedly generates
@@ -144,12 +139,14 @@ public class Player implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
-
+        // TODO implement
         terminate = true;
-        if(!human){
+        if(!human)
             aiThread.interrupt();
-        }
         playerThread.interrupt();
+        try{
+            playerThread.join();
+        } catch (InterruptedException ignored) {}
     }
 
     /**
@@ -158,7 +155,7 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-
+        // TODO implement
         if(human){
             try {
                 actionsQueue.put(slot);
@@ -172,8 +169,8 @@ public class Player implements Runnable {
      * @post - the player's score is increased by 1.
      * @post - the player's score is updated in the ui.
      */
-    public void point() {                                                    
-
+    public void point() {                                                       //fix
+        // TODO implement
         try{    
             this.score++;
             env.ui.setScore(id, score);
@@ -188,8 +185,8 @@ public class Player implements Runnable {
     /**
      * Penalize a player and perform other related actions.
      */
-    public synchronized void penalty() {                                                      
-
+    public synchronized void penalty() {                                                       //fix
+        // TODO implement
         try{
             long endFreezeTime = System.currentTimeMillis()+env.config.penaltyFreezeMillis;
             env.ui.setFreeze(id, env.config.penaltyFreezeMillis);
@@ -199,7 +196,7 @@ public class Player implements Runnable {
             }
             setStatus = 0; 
         } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();//??
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -207,15 +204,11 @@ public class Player implements Runnable {
         return score;
     }
 
-    public Thread getPlayerThread(){                                                    
+    public Thread getPlayerThread(){                                                       //fix
         return playerThread;
     }
 
     public void setStatus(int status){
         setStatus = status;
-    }
-
-    public Object getPlayerLock(){
-        return playerLock;
     }
 }
