@@ -190,10 +190,12 @@ public class Table {
     }
 
     public synchronized void playerLock() {
-        while(!allowPlayer()){
+        while(!allowPlayer() & !Thread.currentThread().isInterrupted()){
             try{    
                 wait();
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
         }
         activePlayers++;
     }
