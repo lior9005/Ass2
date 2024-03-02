@@ -3,11 +3,12 @@ package bguspl.set.ex;
 import bguspl.set.Env;
 
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.Vector;
-
+import java.util.concurrent.ArrayBlockingQueue;
 
 
 /**
@@ -82,7 +83,7 @@ public class Dealer implements Runnable {
     /**
      * The inner loop of the dealer thread that runs as long as the countdown did not time out.
      */
-    private void timerLoop() {                                                                          
+    private void timerLoop() {                                                                          //fix
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             table.dealerUnlock();
             sleepUntilWokenOrTimeout();
@@ -97,12 +98,10 @@ public class Dealer implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
+        // TODO implement
         terminate = true;
-        for(int i = players.length-1; i>=0 ; i--){
+        for(int i = players.length-1; i>=0; i--){
             players[i].terminate();
-            try{
-                players[i].getPlayerThread().join();
-            } catch (InterruptedException ignored) {}
         }
     }
 
@@ -118,7 +117,8 @@ public class Dealer implements Runnable {
     /**
      * Checks cards should be removed from the table and removes them.
      */
-    private void removeCardsFromTable() {  
+    private void removeCardsFromTable() {                                                       //fix
+        // TODO implement
         if(!waitingSets.isEmpty()){
             checkSetVector();
         }
@@ -127,7 +127,8 @@ public class Dealer implements Runnable {
     /**
      * Check if any cards can be removed from the deck and placed on the table.
      */
-    private synchronized void placeCardsOnTable() {           
+    private synchronized void placeCardsOnTable() {
+        // TODO implement            
         int numOfCards = table.countCards();
         int slot = 0;
         Integer[] board = table.getSlotToCard();
@@ -149,6 +150,7 @@ public class Dealer implements Runnable {
      * Sleep for a fixed amount of time or until the thread is awakened for some purpose.
      */
     private void sleepUntilWokenOrTimeout() {
+        // TODO implement
         try{
             if(reshuffleTime-System.currentTimeMillis()<env.config.turnTimeoutWarningMillis){
                 Thread.sleep(10);
@@ -159,8 +161,7 @@ public class Dealer implements Runnable {
                 updateTimerDisplay(false);
             }
         }   catch (InterruptedException ignored) {
-                if (terminate)  //if the game is terminated
-                    Thread.currentThread().interrupt();
+
         }
     }
 
@@ -168,6 +169,7 @@ public class Dealer implements Runnable {
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
+        // TODO implement
         if(reset)
             reshuffleTime = System.currentTimeMillis()+ env.config.turnTimeoutMillis;
         env.ui.setCountdown(reshuffleTime-System.currentTimeMillis(), reshuffleTime-System.currentTimeMillis()<=env.config.turnTimeoutWarningMillis);                
@@ -177,6 +179,7 @@ public class Dealer implements Runnable {
      * Returns all the cards from the table to the deck.
      */
     private void removeAllCardsFromTable() {
+        // TODO implement
         for(int slot=0; slot<env.config.tableSize; slot++){
             if(table.cardAtSlot(slot) != null){
                 deck.add(table.cardAtSlot(slot));
@@ -189,10 +192,11 @@ public class Dealer implements Runnable {
      * Check who is/are the winner/s and displays them.
      */
     private void announceWinners() {
+        // TODO implement
         int maxScore = 0;
         int amount = 0;
+        terminate();
         for(Player player : players){
-            player.terminate();
             if(player.score()> maxScore){
                 maxScore = player.score();
                 amount = 1;
@@ -209,21 +213,18 @@ public class Dealer implements Runnable {
             }
         }
         env.ui.announceWinner(winners);
-        terminate();
     }
 
-    public void declareSet(int playerID){ 
+    public void declareSet(int playerID){                           //maybe after adding to the vector, the dealer will check the set before the playerthread wil wait...
         waitingSets.add(playerID);
-
-        //notify the dealer that a player declared a set, wait until the dealer finishes the check
-        Object lock = players[playerID].getPlayerLock();
-        synchronized(lock){
-            try{
-                dealerThread.interrupt(); 
+        try{
+            Object lock = players[playerID].getPlayerLock();
+            synchronized(lock){
+                dealerThread.interrupt();
                 lock.wait();
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
             }
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -244,7 +245,6 @@ public class Dealer implements Runnable {
                 else
                     incorrectSet(playerID);
             }
-            //notify the player that the dealer finished the check
             else{
                 Object lock = players[playerID].getPlayerLock();
                 synchronized(lock){
