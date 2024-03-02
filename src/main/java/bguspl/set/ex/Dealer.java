@@ -98,10 +98,10 @@ public class Dealer implements Runnable {
      */
     public void terminate() {
         terminate = true;
-        for(Player player : players){
-            player.terminate();
+        for(int i = players.length-1; i>=0 ; i--){
+            players[i].terminate();
             try{
-                player.getPlayerThread().join();
+                players[i].getPlayerThread().join();
             } catch (InterruptedException ignored) {}
         }
     }
