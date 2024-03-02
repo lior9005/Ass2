@@ -157,7 +157,7 @@ public class Dealer implements Runnable {
                 updateTimerDisplay(false);
             }
             else{
-                Thread.sleep(1000);
+                Thread.sleep(995);
                 updateTimerDisplay(false);
             }
         }   catch (InterruptedException ignored) {
